@@ -1,0 +1,55 @@
+# Bootstraps the platform on this laptop: checks tools, creates the kind
+# cluster and namespaces, then installs ArgoCD. ArgoCD installs the rest from Git.
+- name: Bootstrap the GitOps platform
+  hosts: local
+  gather_facts: false
+  vars:
+    cluster_name: gitops
+    kube_context: "kind-{{ cluster_name }}"
+    namespaces: [staging, production, monitoring, argocd]
+
+  tasks:
+    - name: Check the required tools are installed
+      ansible.builtin.command: "which {{ item }}"
+      loop: [docker, kind, kubectl, helm]
+      changed_when: false
+
+    - name: List existing kind clusters
+      ansible.builtin.command: kind get clusters
+      register: existing_clusters
+      changed_when: false
+
+    - name: Create the kind cluster (only if it does not exist)
+      ansible.builtin.command: "kind create cluster --config {{ playbook_dir }}/kind-config.yaml"
+      when: cluster_name not in existing_clusters.stdout_lines
+
+    - name: Create the namespaces (skip any that already exist)
+      ansible.builtin.command: "kubectl --context {{ kube_context }} create namespace {{ item }}"
+      loop: "{{ namespaces }}"
+      register: ns_result
+      changed_when: ns_result.rc == 0
+      failed_when: ns_result.rc != 0 and 'AlreadyExists' not in ns_result.stderr
+
+    - name: Add the Argo Helm chart repository
+      ansible.builtin.command: helm repo add argo https://argoproj.github.io/argo-helm
+      register: repo_result
+      changed_when: repo_result.rc == 0 and 'already exists' not in repo_result.stdout
+      failed_when: repo_result.rc != 0 and 'already exists' not in repo_result.stderr
+
+    - name: Check whether ArgoCD is already installed
+      ansible.builtin.command: "helm status argocd --namespace argocd --kube-context {{ kube_context }}"
+      register: argocd_status
+      changed_when: false
+      failed_when: false
+
+    - name: Install ArgoCD (only if missing; Dex single sign-on switched off to save memory)
+      ansible.builtin.command: >
+        helm install argocd argo/argo-cd --version 10.18.0
+        --namespace argocd
+        --kube-context {{ kube_context }}
+        --set dex.enabled=false
+      when: argocd_status.rc != 0
+
+    - name: Wait for the ArgoCD server to be ready
+      ansible.builtin.command: "kubectl --context {{ kube_context }} -n argocd rollout status deployment/argocd-server --timeout=900s"
+      changed_when: false
