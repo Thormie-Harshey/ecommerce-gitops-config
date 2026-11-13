@@ -1,0 +1,20 @@
+# Staging: syncs automatically. Self-heal undoes manual changes;
+# prune deletes anything removed from Git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Thormie-Harshey/ecommerce-gitops-config.git
+    targetRevision: main
+    path: overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

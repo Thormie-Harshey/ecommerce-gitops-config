@@ -1,0 +1,66 @@
+# Runs the order service. Readiness uses /health (checks the database);
+# liveness only checks the port, so a database outage does not cause restarts.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+      containers:
+        - name: order
+          image: thormie/ecommerce-order:sha-929b453
+          ports:
+            - containerPort: 3002
+          env:
+            - name: PORT
+              value: "3002"
+            - name: PRODUCT_SERVICE_URL
+              value: http://product:3001
+            - name: PGHOST
+              value: postgres
+            - name: PGUSER
+              value: ecommerce
+            - name: PGDATABASE
+              value: ecommerce
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+            - name: OTEL_SERVICE_NAME
+              value: order
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

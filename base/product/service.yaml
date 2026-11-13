@@ -1,0 +1,11 @@
+# Gives the product pods a fixed internal address: http://product:3001
+apiVersion: v1
+kind: Service
+metadata:
+  name: product
+spec:
+  selector:
+    app: product
+  ports:
+    - port: 3001
+      targetPort: 3001

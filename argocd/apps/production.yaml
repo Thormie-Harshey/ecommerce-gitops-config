@@ -1,0 +1,16 @@
+# Production: manual sync only. ArgoCD shows drift as OutOfSync,
+# but changes nothing until a person clicks Sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Thormie-Harshey/ecommerce-gitops-config.git
+    targetRevision: main
+    path: overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production

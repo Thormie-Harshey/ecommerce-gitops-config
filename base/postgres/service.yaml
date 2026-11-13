@@ -1,0 +1,11 @@
+# Gives Postgres a fixed internal address: postgres:5432
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

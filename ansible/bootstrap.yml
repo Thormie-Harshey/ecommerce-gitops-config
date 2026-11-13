@@ -53,3 +53,23 @@
     - name: Wait for the ArgoCD server to be ready
       ansible.builtin.command: "kubectl --context {{ kube_context }} -n argocd rollout status deployment/argocd-server --timeout=900s"
       changed_when: false
+
+    - name: Add the Sealed Secrets Helm chart repository
+      ansible.builtin.command: helm repo add sealed-secrets https://bitnami.github.io/sealed-secrets
+      register: ss_repo_result
+      changed_when: ss_repo_result.rc == 0 and 'already exists' not in ss_repo_result.stdout
+      failed_when: ss_repo_result.rc != 0 and 'already exists' not in ss_repo_result.stderr
+
+    - name: Check whether Sealed Secrets is already installed
+      ansible.builtin.command: "helm status sealed-secrets --namespace kube-system --kube-context {{ kube_context }}"
+      register: ss_status
+      changed_when: false
+      failed_when: false
+
+    - name: Install the Sealed Secrets controller (only if missing)
+      ansible.builtin.command: >
+        helm install sealed-secrets sealed-secrets/sealed-secrets --version 2.22.0
+        --namespace kube-system
+        --kube-context {{ kube_context }}
+        --set-string fullnameOverride=sealed-secrets-controller
+      when: ss_status.rc != 0

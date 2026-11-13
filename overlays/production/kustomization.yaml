@@ -1,0 +1,18 @@
+# Production: the base, in the production namespace, with its own password,
+# and 2 gateway copies. Tags change only when a release is promoted.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: production
+resources:
+  - ../../base
+  - postgres-sealedsecret.yaml
+images:
+  - name: thormie/ecommerce-gateway
+    newTag: sha-929b453
+  - name: thormie/ecommerce-product
+    newTag: sha-929b453
+  - name: thormie/ecommerce-order
+    newTag: sha-929b453
+replicas:
+  - name: gateway
+    count: 2
