@@ -1,11 +1,15 @@
 # Gives the product pods a fixed internal address: http://product:3001
+# The label and port name let Prometheus find it (ServiceMonitor).
 apiVersion: v1
 kind: Service
 metadata:
   name: product
+  labels:
+    app: product
 spec:
   selector:
     app: product
   ports:
-    - port: 3001
+    - name: http
+      port: 3001
       targetPort: 3001

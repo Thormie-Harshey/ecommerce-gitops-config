@@ -1,11 +1,15 @@
 # Gives the order pods a fixed internal address: http://order:3002
+# The label and port name let Prometheus find it (ServiceMonitor).
 apiVersion: v1
 kind: Service
 metadata:
   name: order
+  labels:
+    app: order
 spec:
   selector:
     app: order
   ports:
-    - port: 3002
+    - name: http
+      port: 3002
       targetPort: 3002

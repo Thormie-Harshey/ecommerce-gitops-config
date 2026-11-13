@@ -1,0 +1,19 @@
+# Tells Prometheus to read /metrics from gateway, product and order
+# in both staging and production, every 15 seconds.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ecommerce-services
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames: [staging, production]
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [gateway, product, order]
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
