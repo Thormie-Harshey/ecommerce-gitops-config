@@ -73,3 +73,8 @@
         --kube-context {{ kube_context }}
         --set-string fullnameOverride=sealed-secrets-controller
       when: ss_status.rc != 0
+
+    - name: Hand ArgoCD the root app (app of apps); ArgoCD deploys the rest from Git
+      ansible.builtin.command: "kubectl --context {{ kube_context }} apply -f {{ playbook_dir }}/../argocd/root-app.yaml"
+      register: root_app_result
+      changed_when: "'unchanged' not in root_app_result.stdout"
