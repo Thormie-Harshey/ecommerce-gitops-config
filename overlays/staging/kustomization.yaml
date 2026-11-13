@@ -8,8 +8,8 @@ resources:
   - postgres-sealedsecret.yaml
 images:
   - name: thormie/ecommerce-gateway
-    newTag: sha-7471e60
+    newTag: sha-929b453
   - name: thormie/ecommerce-product
-    newTag: sha-7471e60
+    newTag: sha-929b453
   - name: thormie/ecommerce-order
-    newTag: sha-7471e60
+    newTag: sha-929b453
