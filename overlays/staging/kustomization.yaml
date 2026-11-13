@@ -14,21 +14,3 @@ images:
     newTag: sha-929b453
   - name: thormie/ecommerce-order
     newTag: sha-929b453
-# ALERT DRILL: wrong product address, to make orders fail. Revert after testing.
-patches:
-  - target:
-      kind: Deployment
-      name: order
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: order
-      spec:
-        template:
-          spec:
-            containers:
-              - name: order
-                env:
-                  - name: PRODUCT_SERVICE_URL
-                    value: http://product-missing:3001
