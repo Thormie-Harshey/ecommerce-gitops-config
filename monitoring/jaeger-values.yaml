@@ -1,0 +1,10 @@
+# Jaeger v2, one pod: receives traces (OTLP on 4317/4318), stores them
+# in memory, and serves the UI. The image's built-in config applies.
+jaeger:
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 512Mi }
+
+# Elasticsearch maintenance job, not used with in-memory storage
+esRollover:
+  enabled: false
