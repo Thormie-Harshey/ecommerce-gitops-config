@@ -9,8 +9,8 @@ resources:
   - traffic-generator.yaml
 images:
   - name: thormie/ecommerce-gateway
-    newTag: sha-929b453
+    newTag: sha-a15fa9d
   - name: thormie/ecommerce-product
-    newTag: sha-929b453
+    newTag: sha-a15fa9d
   - name: thormie/ecommerce-order
-    newTag: sha-929b453
+    newTag: sha-a15fa9d
