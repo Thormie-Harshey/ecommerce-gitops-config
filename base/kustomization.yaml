@@ -12,3 +12,14 @@ resources:
   - postgres/service.yaml
   - redis/deployment.yaml
   - redis/service.yaml
+# Point all three services at Jaeger, in one place
+patches:
+  - target:
+      kind: Deployment
+      name: "gateway|order|product"
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://jaeger.monitoring.svc.cluster.local:4318
